@@ -2,7 +2,7 @@
 create extension if not exists pgcrypto;
 create table if not exists profiles(id uuid primary key references auth.users on delete cascade, full_name text, role text not null default 'customer' check(role in ('admin','manager','staff','customer')), created_at timestamptz not null default now());
 create table if not exists locations(id text primary key, name text not null, kind text not null default 'store', city text not null);
-create table if not exists suppliers(id text primary key, name text not null, contact_name text, email text, phone text, lead_days int not null default 14, payment_terms int not null default 30, created_at timestamptz not null default now());
+create table if not exists suppliers(id text primary key, name text not null, contact_name text, email text, phone text, lead_days int not null default 14, payment_terms int not null default 30, active boolean not null default true, created_at timestamptz not null default now());
 create table if not exists customers(id text primary key, name text not null, email text, phone text, loyalty_points int not null default 0, created_at timestamptz not null default now());
 create table if not exists items(id text primary key, sku text unique not null, barcode text unique not null, name text not null, category text not null, description text, cost numeric(12,2) not null, price numeric(12,2) not null, lead_days int not null default 14, reorder_point int not null default 5, supplier_id text references suppliers, is_parent boolean not null default false, emoji text, created_at timestamptz not null default now());
 create table if not exists bom(parent_id text references items on delete cascade, component_id text references items, qty_per numeric(12,3) not null, primary key(parent_id,component_id));
@@ -118,3 +118,5 @@ begin
  insert into sales_lines(order_id,item_id,qty,unit_price,unit_cost) values(v_id,v_item.id,p_qty,v_item.price,v_item.cost);
  return v_id;
 end $$;
+
+alter table suppliers add column if not exists active boolean not null default true;
